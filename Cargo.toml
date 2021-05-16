@@ -1,6 +1,6 @@
 [package]
 name = "openweathermap"
-version = "0.0.6"
+version = "0.0.7"
 authors = ["Patrick Hoffmann <pat@thats-software.com>"]
 edition = "2018"
 description = "easy access current weather data from OpenWeatherMap"
