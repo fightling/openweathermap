@@ -86,7 +86,7 @@ type Receiver = mpsc::Receiver<result::Result<String, String>>;
 
 // start weather fetching which will spawn a thread that signals updates from OWM in json format
 // via the returned receiver
-pub fn init(city: &str, units: &str, lang: &str, api_key: &str) -> Receiver {
+pub fn init(city: &str, units: &str, lang: &str, api_key: &str, poll_mins: u64) -> Receiver {
     // generate correct request URL depending on city is id or name
     let url = match city.parse::<u64>().is_ok() {
         true => format!(
@@ -98,8 +98,8 @@ pub fn init(city: &str, units: &str, lang: &str, api_key: &str) -> Receiver {
             city, units, lang, api_key
         ),
     };
-    // fork thread that continuously fetches weather updates every 10 minutes
-    let period = time::Duration::from_secs(60 * 10);
+    // fork thread that continuously fetches weather updates every <poll_mins> minutes
+    let period = time::Duration::from_secs(60 * poll_mins);
     let (tx, rx) = mpsc::channel();
     thread::spawn(move || {
         tx.send(Err("loading...".to_string())).unwrap();
@@ -111,8 +111,7 @@ pub fn init(city: &str, units: &str, lang: &str, api_key: &str) -> Receiver {
                     thread::sleep(period);
                 }
                 _ => {
-                    tx.send(Err(response.status().to_string()))
-                        .unwrap();
+                    tx.send(Err(response.status().to_string())).unwrap();
                 }
             }
         }
@@ -122,13 +121,13 @@ pub fn init(city: &str, units: &str, lang: &str, api_key: &str) -> Receiver {
 }
 
 // get some weather update or None (if there is nothing new)
-pub fn update(receiver: &Receiver) -> Option<Result<CurrentWeather,String>> {
+pub fn update(receiver: &Receiver) -> Option<Result<CurrentWeather, String>> {
     match receiver.try_recv() {
         Ok(response) => match response {
             Ok(json) => match serde_json::from_str(&json) {
                 Ok(w) => Some(Ok(w)),
                 Err(e) => Some(Err(e.to_string())),
-            }
+            },
             Err(e) => Some(Err(e.to_string())),
         },
         Err(_e) => None,

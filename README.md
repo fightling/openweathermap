@@ -35,10 +35,10 @@ fn main() {
 }
 ```
 
-`openweathermap::init()` will spawn a thread which asks OpenWeatherMap for the current weather every 10 minutes.
+`openweathermap::init()` will spawn a thread which asks OpenWeatherMap for the current weather periodically.
 Whenever there is an update you can get it by using `openweathermap::update()`.
 
-Within the 10 minutes waiting time you might get `None` which tells you that there is no new update available (see the outer `match` statement in the above example.
+Within the polling period you might get `None` which tells you that there is no new update available (see the outer `match` statement in the above example.
 
 You may get an `Err` object if an error occurs.
 Initially while waiting for the first update you will get an `Err` that includes the String "loading..." but also http or json errors may occur.
@@ -48,11 +48,11 @@ For example if you use an invalid API key you will get `401 Unauthorized`.
 
 #### openweathermap::init()
 
-Spawns a thread which fetches the current weather from [openweathermap.org](https://openweathermap.org) every 10 minutes automatically.
+Spawns a thread which fetches the current weather from [openweathermap.org](https://openweathermap.org) periodically.
 
 ##### Definition:
 
-`pub fn init(city: &str, units: &str, lang: &str, api_key: &str) -> Receiver`
+`pub fn init(city: &str, units: &str, lang: &str, api_key: &str, poll_mins: u64) -> Receiver`
 
 ##### Parameters:
 
@@ -60,6 +60,7 @@ Spawns a thread which fetches the current weather from [openweathermap.org](http
 -   `units` : Either `"metric"` (meters, m/s, °C, etc.), `"imperial"` (miles, mi/s, °F, etc.) or `"standard"` (meters, m/s, K, etc.)
 -   `lang` : Language code line `"en"` for English (see [this list](https://openweathermap.org/current#multi) for all available language codes).
 -   `api_key` : Your API key you can get from [OpenWeatherMap](https://openweathermap.org/price).
+-   `poll_mins` : Poll period length in minutes (`10` is recommended).
 
 ##### Return Value:
 
