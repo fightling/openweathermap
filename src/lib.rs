@@ -2,6 +2,7 @@ extern crate reqwest;
 extern crate serde_json;
 
 use http::StatusCode;
+use regex::Regex;
 use serde::Deserialize;
 use std::cmp;
 use std::sync::mpsc;
@@ -87,28 +88,40 @@ type Receiver = mpsc::Receiver<result::Result<String, String>>;
 
 // start weather fetching which will spawn a thread that signals updates from OWM in json format
 // via the returned receiver
-pub fn init(city: &str, units: &str, lang: &str, api_key: &str, poll_mins: u64) -> Receiver {
+pub fn init(
+    location: &str,
+    units: &str,
+    lang: &str,
+    api_key: &str,
+    poll_mins: u64,
+) -> Receiver {
     // generate correct request URL depending on city is id or name
-    let url = match city.parse::<u64>().is_ok() {
+    let url = match location.parse::<u64>().is_ok() {
         true => format!(
             "https://api.openweathermap.org/data/2.5/weather?id={}&units={}&lang={}&appid={}",
-            city, units, lang, api_key
+            location, units, lang, api_key
         ),
-        false => format!(
-            "https://api.openweathermap.org/data/2.5/weather?q={}&units={}&lang={}&appid={}",
-            city, units, lang, api_key
-        ),
+        false => {
+            let re = Regex::new(r"(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)").unwrap();
+            match re.captures(&location) {
+                Some(caps) => format!("https://api.openweathermap.org/data/2.5/weather?lat={}&lon={}&units={}&lang={}&appid={}",
+                            caps.get(1).unwrap().as_str(), caps.get(2).unwrap().as_str(), units, lang, api_key ),
+                None => format!(
+                            "https://api.openweathermap.org/data/2.5/weather?q={}&units={}&lang={}&appid={}",
+                            location, units, lang, api_key ),
+            }
+        }
     };
     // fork thread that continuously fetches weather updates every <poll_mins> minutes
     let period = time::Duration::from_secs(60 * cmp::min(1, poll_mins));
     let (tx, rx) = mpsc::channel();
     thread::spawn(move || {
-        tx.send(Err("loading...".to_string())).unwrap();
+        tx.send(Err("loading...".to_string())).unwrap_or(());
         loop {
             let response = reqwest::blocking::get(&url).unwrap();
             match response.status() {
                 StatusCode::OK => {
-                    tx.send(Ok(response.text().unwrap())).unwrap();
+                    tx.send(Ok(response.text().unwrap())).unwrap_or(());
                     thread::sleep(period);
                 }
                 _ => {
