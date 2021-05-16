@@ -8,7 +8,7 @@ First add this crate to your dependencies in you `Cargo.toml` file:
 
 ```toml
 [dependencies]
-openweathermap = "0.0.2"
+openweathermap = "0.0.3"
 ```
 
 Then use the crate in your rust source file by calling `openweathermap::init()` which returns a receiver object which you can then use to call `openweathermap::update()` to get weather updates like in the following example:
@@ -18,7 +18,7 @@ extern crate openweathermap;
 
 fn main() {
     // start our observatory via OWM
-    let receiver = &openweathermap::init(city, units, lang, apikey);
+    let receiver = &openweathermap::init("Berlin,DE", "metric", "en", "<your OpenWeatherMap API key>");
     loop {
         match openweathermap::update(receiver) {
             Some(response) => match response {
