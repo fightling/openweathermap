@@ -1,4 +1,3 @@
-extern crate regex;
 extern crate reqwest;
 extern crate serde_json;
 
