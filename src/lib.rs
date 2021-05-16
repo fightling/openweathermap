@@ -3,6 +3,7 @@ extern crate serde_json;
 
 use http::StatusCode;
 use serde::Deserialize;
+use std::cmp;
 use std::sync::mpsc;
 use std::{result, thread, time};
 
@@ -99,7 +100,7 @@ pub fn init(city: &str, units: &str, lang: &str, api_key: &str, poll_mins: u64) 
         ),
     };
     // fork thread that continuously fetches weather updates every <poll_mins> minutes
-    let period = time::Duration::from_secs(60 * poll_mins);
+    let period = time::Duration::from_secs(60 * cmp::min(1, poll_mins));
     let (tx, rx) = mpsc::channel();
     thread::spawn(move || {
         tx.send(Err("loading...".to_string())).unwrap();
