@@ -54,7 +54,7 @@ After the first successful weather update you get the result and the spawned thr
 
 ```rust
 extern crate openweathermap;
-use openweathermap::weather;
+use openweathermap::blocking::weather;
 
 fn main() {
     // start our observatory via OWM
@@ -70,8 +70,8 @@ fn main() {
 
 ```
 
-This example is using the synchronous variant `openweathermap::weather`.
-If you wanna deal with the returned future by yourself just use `openweathermap::blocking::weather`.
+This example is using the synchronous variant `openweathermap::blocking::weather`.
+If you wanna deal with the returned future by yourself just use `openweathermap::weather`.
 
 ### Reference
 
