@@ -72,7 +72,7 @@ fn test_apikey() {
 #[test]
 fn test_cities() {
     let mut rng = thread_rng();
-    let max = 100;
+    let max = 10;
     for _i in 0..=max {
         let city = CITIES[rng.gen_range(0..CITIES.len() - 1)];
         let r = init(&city.to_string(), "metric", "en", APIKEY, 0);
