@@ -4,9 +4,9 @@ extern crate serde_json;
 use http::StatusCode;
 use regex::Regex;
 use serde::Deserialize;
-use std::cmp;
+use std::time::Duration;
 use std::sync::mpsc;
-use std::{result, thread, time};
+use std::{result, thread};
 
 #[derive(Deserialize, Debug)]
 pub struct Coord {
@@ -49,16 +49,16 @@ pub struct Clouds {
 #[derive(Deserialize, Debug)]
 pub struct Volume {
     #[serde(rename = "1h")]
-    pub h1: u64,
+    pub h1: Option<f64>,
     #[serde(rename = "3h")]
-    pub h3: u64,
+    pub h3: Option<f64>,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct Sys {
     #[serde(rename = "type")]
-    pub type_: u64,
-    pub id: u64,
+    pub type_: Option<u64>,
+    pub id: Option<u64>,
     pub message: Option<f64>,
     pub country: String,
     pub sunrise: u64,
@@ -113,7 +113,7 @@ pub fn init(
         }
     };
     // fork thread that continuously fetches weather updates every <poll_mins> minutes
-    let period = time::Duration::from_secs(60 * cmp::min(1, poll_mins));
+    let period = Duration::from_secs(60 * poll_mins);
     let (tx, rx) = mpsc::channel();
     thread::spawn(move || {
         tx.send(Err("loading...".to_string())).unwrap_or(());
@@ -122,10 +122,13 @@ pub fn init(
             match response.status() {
                 StatusCode::OK => {
                     tx.send(Ok(response.text().unwrap())).unwrap_or(());
+                    if period == Duration::new(0,0) {
+                        break;
+                    }
                     thread::sleep(period);
                 }
                 _ => {
-                    tx.send(Err(response.status().to_string())).unwrap();
+                    tx.send(Err(response.status().to_string())).unwrap_or(());
                 }
             }
         }
@@ -147,3 +150,6 @@ pub fn update(receiver: &Receiver) -> Option<Result<CurrentWeather, String>> {
         Err(_e) => None,
     }
 }
+
+#[cfg(test)]
+mod tests;

@@ -66,7 +66,7 @@ Spawns a thread which fetches the current weather from [openweathermap.org](http
 -   `units` : Either `"metric"` (meters, m/s, °C, etc.), `"imperial"` (miles, mi/s, °F, etc.) or `"standard"` (meters, m/s, K, etc.)
 -   `lang` : Language code line `"en"` for English (see [this list](https://openweathermap.org/current#multi) for all available language codes).
 -   `api_key` : Your API key you can get from [OpenWeatherMap](https://openweathermap.org/price).
--   `poll_mins` : Poll period length in minutes (`10` is recommended).
+-   `poll_mins` : Poll period length in minutes (`10` is recommended). If `poll_mins` equals `0` the thread will terminate after the first successful update.
 
 ##### Return Value:
 
