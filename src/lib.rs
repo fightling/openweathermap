@@ -9,6 +9,9 @@ use std::sync::mpsc;
 use std::thread;
 use std::time::Duration;
 
+#[cfg(test)]
+mod tests;
+
 #[derive(Deserialize, Debug)]
 pub struct Coord {
     pub lon: f64,
@@ -83,9 +86,8 @@ pub struct CurrentWeather {
     pub id: u64,
     pub name: String,
     pub cod: u64,
-    // internal
     #[serde(skip)]
-    units: String,
+    pub units: String,
 }
 
 type Receiver = mpsc::Receiver<Result<CurrentWeather, String>>;
@@ -185,6 +187,3 @@ pub mod blocking {
         executor::block_on(super::weather(location, units, lang, api_key))
     }
 }
-
-#[cfg(test)]
-mod tests;
