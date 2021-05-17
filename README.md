@@ -10,23 +10,20 @@ First add this crate to your dependencies in you `Cargo.toml` file:
 [dependencies]
 openweathermap = "0.0.8"
 ```
+### Get continuous weather updates
 
 Then use the crate in your rust source file by calling `openweathermap::init()` which returns a receiver object which you can then use to call `openweathermap::update()` to get weather updates like in the following example:
 
 ```rust
 extern crate openweathermap;
 
+use openweathermap::{init,update};
+
 fn main() {
     // start our observatory via OWM
-    let receiver = &openweathermap::init(
-        "Berlin,DE",
-        "metric",
-        "en",
-        "<your OpenWeatherMap API key>",
-        10,
-    );
+    let receiver = &init("Berlin,DE", "metric", "en", "<APIKEY>", 10);
     loop {
-        match openweathermap::update(receiver) {
+        match update(receiver) {
             Some(response) => match response {
                 Ok(current) => println!(
                     "Today's weather in {} is {}",
@@ -41,14 +38,40 @@ fn main() {
 }
 ```
 
-`openweathermap::init()` will spawn a thread which asks OpenWeatherMap for the current weather periodically.
-Whenever there is an update you can get it by using `openweathermap::update()`.
+`init()` will spawn a thread which asks OpenWeatherMap for the current weather periodically.
+Whenever there is an update you can get it by using `update()`.
 
 Within the polling period you might get `None` which tells you that there is no new update available (see the outer `match` statement in the above example).
 
 You may get an `Err` object if an error occurs.
-Initially while waiting for the first update you will get an `Err` that includes the String "loading..." but also http or json errors may occur.
+Initially while waiting for the first update you will get an `Err` that includes the String "loading..." (see also `const LOADING:&str`) but also http or json errors may occur.
 For example if you use an invalid API key you will get `401 Unauthorized`.
+
+### Get weather just once
+
+If you need the weather just once you may use the method `weather()` which envelopes `init()` and `update()` into one single call.
+After the first successful weather update you get the result and the spawned thread will stop immediately.
+
+```rust
+extern crate openweathermap;
+use openweathermap::blocking::weather;
+
+fn main() {
+    // start our observatory via OWM
+    match &weather("Berlin,DE", "metric", "en", "<APIKEY>") {
+        Ok(current) => println!(
+            "Today's weather in {} is {}",
+            current.name.as_str(),
+            current.weather[0].main.as_str()
+        ),
+        Err(e) => println!("Could not fetch weather because: {}", e),
+    }
+}
+
+```
+
+This example is using the blocking variant `openweathermap::blocking::weather`.
+If you wanna deal with the returned future by yourself just use `openweathermap::weather`;
 
 ### Reference
 
@@ -92,3 +115,36 @@ Otherwise could be `Some<CurrentWeather>` on success or `Err<String>` if an erro
 
 On success you get a `CurrentWeather` object which is a nested struct including all weather properties which are provided. Those properties are well described [here](https://openweathermap.org/current#parameter).
 All property names are like in this description except `sys.type_` which has a `_` appended so that it does not collide with the rust keyword `type`.
+
+#### openweathermap::weather()
+
+Gets the weather just once and then stops the thread immediately.
+This asynchronously version returns the result in a future.
+
+##### Definition:
+
+`pub fn weather(location: &str, units: &str, lang: &str, api_key: &str) -> Receiver`
+
+##### Parameters:
+
+Like in `init()` except that `poll_mins` is not available.
+
+##### Return Value:
+
+Returns a future of `Option<Result<CurrentWeather,String>>` (see `openweathermap::update()`).
+
+#### openweathermap::blocking::weather()
+
+Gets the weather just once then waits for the response and stops the thread immediately.
+
+##### Definition:
+
+`pub fn weather(location: &str, units: &str, lang: &str, api_key: &str) -> Receiver`
+
+##### Parameters:
+
+Like in `init()` except that `poll_mins` is not available.
+
+##### Return Value:
+
+Like `openweathermap::update()` this function returns `Option<Result<CurrentWeather,String>>`.

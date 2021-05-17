@@ -2,61 +2,38 @@
 use super::*;
 use rand::{thread_rng, Rng};
 
-fn test(r: Receiver) -> Result<CurrentWeather, String> {
-    loop {
-        match update(&r) {
-            Some(response) => match response {
-                Ok(w) => return Ok(w),
-                Err(e) => {
-                    if e != "loading..." {
-                        return Err(e);
-                    }
-                }
-            },
-            None => (),
-        }
-    }
-}
-
-static APIKEY: &str = "df8f453724ddbe2befa2d20f09b4a694";
+const APIKEY: &str = "df8f453724ddbe2befa2d20f09b4a694";
 
 #[test]
 fn test_city() {
-    let r = init("Munich,DE", "metric", "en", APIKEY, 0);
-    let w = test(r).unwrap();
+    let w = blocking::weather("Munich,DE", "metric", "en", APIKEY).unwrap();
     assert_eq!(w.name, "Munich");
 }
 
 #[test]
 fn test_cityid() {
-    let r = init("2950159", "metric", "en", APIKEY, 0);
-    let w = test(r).unwrap();
+    let w = blocking::weather("2950159", "metric", "en", APIKEY).unwrap();
     assert_eq!(w.name, "Berlin");
 }
 
 #[test]
 fn test_coordinate() {
-    let r = init("52.5244,13.4105", "metric", "en", APIKEY, 0);
-    let w = test(r).unwrap();
+    let w = blocking::weather("52.5244,13.4105", "metric", "en", APIKEY).unwrap();
     assert_eq!(w.coord.lat, 52.5244);
     assert_eq!(w.coord.lon, 13.4105);
 }
 
 #[test]
-fn test_langauge() {
-    let r = init("München,DE", "metric", "de", APIKEY, 0);
-    let w = test(r).unwrap();
+fn test_language() {
+    let w = blocking::weather("München,DE", "metric", "de", APIKEY).unwrap();
     assert_eq!(w.name, "München");
 }
 
 #[test]
 fn test_units() {
-    let r1 = init("Berlin,DE", "metric", "en", APIKEY, 0);
-    let r2 = init("Berlin,DE", "imperial", "en", APIKEY, 0);
-    let r3 = init("Berlin,DE", "standard", "en", APIKEY, 0);
-    let w1 = test(r1).unwrap();
-    let w2 = test(r2).unwrap();
-    let w3 = test(r3).unwrap();
+    let w1 = blocking::weather("Berlin,DE", "metric", "en", APIKEY).unwrap();
+    let w2 = blocking::weather("Berlin,DE", "imperial", "en", APIKEY).unwrap();
+    let w3 = blocking::weather("Berlin,DE", "standard", "en", APIKEY).unwrap();
     assert_ne!(w1.main.temp, w2.main.temp);
     assert_ne!(w1.main.temp, w3.main.temp);
     assert_ne!(w2.main.temp, w3.main.temp);
@@ -64,8 +41,7 @@ fn test_units() {
 
 #[test]
 fn test_apikey() {
-    let r = init("Berlin,DE", "metric", "de", "", 0);
-    let w = test(r);
+    let w = blocking::weather("Berlin,DE", "metric", "de", "");
     assert!(w.is_err());
 }
 
@@ -75,8 +51,7 @@ fn test_cities() {
     let max = 10;
     for _i in 0..=max {
         let city = CITIES[rng.gen_range(0..CITIES.len() - 1)];
-        let r = init(&city.to_string(), "metric", "en", APIKEY, 0);
-        let w = test(r).unwrap();
+        let w = blocking::weather(&city.to_string(), "metric", "en", APIKEY).unwrap();
         assert_eq!(w.id, city);
     }
 }

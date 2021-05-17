@@ -1,12 +1,13 @@
 extern crate reqwest;
 extern crate serde_json;
 
+use futures::executor;
 use http::StatusCode;
 use regex::Regex;
 use serde::Deserialize;
-use std::time::Duration;
 use std::sync::mpsc;
-use std::{result, thread};
+use std::thread;
+use std::time::Duration;
 
 #[derive(Deserialize, Debug)]
 pub struct Coord {
@@ -82,19 +83,18 @@ pub struct CurrentWeather {
     pub id: u64,
     pub name: String,
     pub cod: u64,
+    // internal
+    #[serde(skip)]
+    units: String,
 }
 
-type Receiver = mpsc::Receiver<result::Result<String, String>>;
+type Receiver = mpsc::Receiver<Result<CurrentWeather, String>>;
+
+pub const LOADING: &str = "loading...";
 
 // start weather fetching which will spawn a thread that signals updates from OWM in json format
 // via the returned receiver
-pub fn init(
-    location: &str,
-    units: &str,
-    lang: &str,
-    api_key: &str,
-    poll_mins: u64,
-) -> Receiver {
+pub fn init(location: &str, units: &str, lang: &str, api_key: &str, poll_mins: u64) -> Receiver {
     // generate correct request URL depending on city is id or name
     let url = match location.parse::<u64>().is_ok() {
         true => format!(
@@ -115,21 +115,25 @@ pub fn init(
     // fork thread that continuously fetches weather updates every <poll_mins> minutes
     let period = Duration::from_secs(60 * poll_mins);
     let (tx, rx) = mpsc::channel();
+    let u = units.to_string();
     thread::spawn(move || {
-        tx.send(Err("loading...".to_string())).unwrap_or(());
+        tx.send(Err(LOADING.to_string())).unwrap_or(());
         loop {
             let response = reqwest::blocking::get(&url).unwrap();
             match response.status() {
-                StatusCode::OK => {
-                    tx.send(Ok(response.text().unwrap())).unwrap_or(());
-                    if period == Duration::new(0,0) {
-                        break;
+                StatusCode::OK => match serde_json::from_str(&response.text().unwrap()) {
+                    Ok(w) => {
+                        let mut w: CurrentWeather = w;
+                        w.units = u.clone();
+                        tx.send(Ok(w)).unwrap_or(());
+                        if period == Duration::new(0, 0) {
+                            break;
+                        }
+                        thread::sleep(period);
                     }
-                    thread::sleep(period);
-                }
-                _ => {
-                    tx.send(Err(response.status().to_string())).unwrap_or(());
-                }
+                    Err(e) => tx.send(Err(e.to_string())).unwrap_or(()),
+                },
+                _ => tx.send(Err(response.status().to_string())).unwrap_or(()),
             }
         }
     });
@@ -140,14 +144,45 @@ pub fn init(
 // get some weather update or None (if there is nothing new)
 pub fn update(receiver: &Receiver) -> Option<Result<CurrentWeather, String>> {
     match receiver.try_recv() {
-        Ok(response) => match response {
-            Ok(json) => match serde_json::from_str(&json) {
-                Ok(w) => Some(Ok(w)),
-                Err(e) => Some(Err(e.to_string())),
-            },
-            Err(e) => Some(Err(e.to_string())),
-        },
+        Ok(response) => Some(response),
         Err(_e) => None,
+    }
+}
+
+// get weather just once
+pub async fn weather(
+    location: &str,
+    units: &str,
+    lang: &str,
+    api_key: &str,
+) -> Result<CurrentWeather, String> {
+    let r = init(location, units, lang, api_key, 0);
+    loop {
+        match update(&r) {
+            Some(response) => match response {
+                Ok(current) => return Ok(current),
+                Err(e) => {
+                    if e != LOADING {
+                        return Err(e);
+                    }
+                }
+            },
+            None => (),
+        }
+    }
+}
+
+pub mod blocking {
+    use super::*;
+    // blocking variant of weather()
+    pub fn weather(
+        location: &str,
+        units: &str,
+        lang: &str,
+        api_key: &str,
+    ) -> Result<CurrentWeather, String> {
+        // wait for result
+        executor::block_on(super::weather(location, units, lang, api_key))
     }
 }
 
