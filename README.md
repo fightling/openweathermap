@@ -1,12 +1,12 @@
-# openweathermap
+# openweathermap [![Rust](https://github.com/fightling/openweathermap/actions/workflows/rust.yml/badge.svg)](https://github.com/fightling/openweathermap/actions/workflows/rust.yml)
 
-This is a crate which lets you easily access current weather data from [OpenWeatherMap](https://openweathermap.org/).
+This crate lets you easily access current weather data from [OpenWeatherMap](https://openweathermap.org/). This is an *unofficial* extension I made to learn rust a little.
 
-## Content
+## Contents
 
 <!-- MDTOC maxdepth:6 firsth1:2 numbering:0 flatten:0 bullets:1 updateOnSave:1 -->
 
-- [Content](#content)   
+- [Contents](#contents)   
 - [How to use](#how-to-use)   
    - [Get continuous weather updates](#get-continuous-weather-updates)   
       - [First: Start polling](#first-start-polling)   
@@ -15,9 +15,11 @@ This is a crate which lets you easily access current weather data from [OpenWeat
          - [Weather Update: `CurrentWeather`](#weather-update-currentweather)   
          - [Some Error: `Err`](#some-error-err)   
    - [Get weather just once](#get-weather-just-once)   
+- [Reference Documentation](#reference-documentation)   
+- [*github* repository](#github-repository)   
+- [*crates.io*](#cratesio)   
 
 <!-- /MDTOC -->
-
 ## How to use
 
 First add this crate to your dependencies in you `Cargo.toml` file:
@@ -112,6 +114,14 @@ There is a *blocking* and a *non-blocking* variant of `weather()`:
 - The above example uses the synchronous (*blocking*) variant `openweathermap::blocking::weather` which wont return until there is a new update.
 - If you like to deal with the returned *future* by yourself just use `openweathermap::weather` and asynchronously await the result until there is any.
 
-## Reference
+## Reference Documentation
 
-Reference documentation can be found [here](https://docs.rs/openweathermap).
+Beside this introduction there is a reference documentation which can be found [here](https://docs.rs/openweathermap).
+
+## *github* repository
+
+For the source code see [this repository](https://github.com/fightling/openweathermap) at *github.com*.
+
+## *crates.io*
+
+Published at [crates.io](https://crates.io/crates/openweathermap).
