@@ -2,38 +2,46 @@
 use super::*;
 use rand::{thread_rng, Rng};
 
-const APIKEY: &str = "df8f453724ddbe2befa2d20f09b4a694";
+fn apikey() -> String {
+    match std::env::var("OWM_APIKEY") {
+        Ok(key) => key,
+        Err(_r) => {
+            eprintln!("error: set API-key with environment valiable OWM_APIKEY");
+            "".to_string()
+        }
+    }
+}
 
 #[test]
 fn test_city() {
-    let w = blocking::weather("Munich,DE", "metric", "en", APIKEY).unwrap();
+    let w = blocking::weather("Munich,DE", "metric", "en", &apikey()).unwrap();
     assert_eq!(w.name, "Munich");
 }
 
 #[test]
 fn test_cityid() {
-    let w = blocking::weather("2950159", "metric", "en", APIKEY).unwrap();
+    let w = blocking::weather("2950159", "metric", "en", &apikey()).unwrap();
     assert_eq!(w.name, "Berlin");
 }
 
 #[test]
 fn test_coordinate() {
-    let w = blocking::weather("52.5244,13.4105", "metric", "en", APIKEY).unwrap();
+    let w = blocking::weather("52.5244,13.4105", "metric", "en", &apikey()).unwrap();
     assert_eq!(w.coord.lat, 52.5244);
     assert_eq!(w.coord.lon, 13.4105);
 }
 
 #[test]
 fn test_language() {
-    let w = blocking::weather("München,DE", "metric", "de", APIKEY).unwrap();
+    let w = blocking::weather("München,DE", "metric", "de", &apikey()).unwrap();
     assert_eq!(w.name, "München");
 }
 
 #[test]
 fn test_units() {
-    let w1 = blocking::weather("Berlin,DE", "metric", "en", APIKEY).unwrap();
-    let w2 = blocking::weather("Berlin,DE", "imperial", "en", APIKEY).unwrap();
-    let w3 = blocking::weather("Berlin,DE", "standard", "en", APIKEY).unwrap();
+    let w1 = blocking::weather("Berlin,DE", "metric", "en", &apikey()).unwrap();
+    let w2 = blocking::weather("Berlin,DE", "imperial", "en", &apikey()).unwrap();
+    let w3 = blocking::weather("Berlin,DE", "standard", "en", &apikey()).unwrap();
     assert_ne!(w1.main.temp, w2.main.temp);
     assert_ne!(w1.main.temp, w3.main.temp);
     assert_ne!(w2.main.temp, w3.main.temp);
@@ -51,7 +59,7 @@ fn test_cities() {
     let max = 10;
     for _i in 0..=max {
         let city = CITIES[rng.gen_range(0..CITIES.len() - 1)];
-        let w = blocking::weather(&city.to_string(), "metric", "en", APIKEY).unwrap();
+        let w = blocking::weather(&city.to_string(), "metric", "en", &apikey()).unwrap();
         assert_eq!(w.id, city);
     }
 }
