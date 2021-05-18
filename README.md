@@ -2,6 +2,23 @@
 
 This is a crate which lets you easily access current weather data from [OpenWeatherMap](https://openweathermap.org/).
 
+## Content
+
+<!-- MDTOC maxdepth:6 firsth1:1 numbering:0 flatten:0 bullets:1 updateOnSave:1 -->
+
+- [openweathermap](#openweathermap)   
+   - [Content](#content)   
+   - [How to use](#how-to-use)   
+      - [Get continuous weather updates](#get-continuous-weather-updates)   
+         - [First: Start polling](#first-start-polling)   
+         - [Then: Get weather updates](#then-get-weather-updates)   
+            - [Nothing New: `None`](#nothing-new-none)   
+            - [Weather Update: `CurrentWeather`](#weather-update-currentweather)   
+            - [Some Error: `Err`](#some-error-err)   
+      - [Get weather just once](#get-weather-just-once)   
+
+<!-- /MDTOC -->
+
 ## How to use
 
 First add this crate to your dependencies in you `Cargo.toml` file:
@@ -12,7 +29,8 @@ openweathermap = "0.1.3"
 ```
 ### Get continuous weather updates
 
-Then use the crate in your rust source file by calling `openweathermap::init()` which returns a receiver object which you can then use to call `openweathermap::update()` to get weather updates like in the following example:
+Then use the crate in your rust source file by calling `openweathermap::init()` which returns a receiver object.
+You can then use this receiver object to call `openweathermap::update()` to get weather updates like in the following example:
 
 ```rust
 extern crate openweathermap;
@@ -38,19 +56,39 @@ fn main() {
 }
 ```
 
-`init()` will spawn a thread which asks OpenWeatherMap for the current weather periodically.
-Whenever there is an update you can get it by using `update()`.
+#### First: Start polling
 
-Within the polling period you might get `None` which tells you that there is no new update available (see the outer `match` statement in the above example).
+`init()` spawns a thread which then will periodically poll *OpenWeatherMap* for the latest current weather report.
+You then can use `update()` to ask for it.
 
-You may get an `Err` object if an error occurs.
-Initially while waiting for the first update you will get an `Err` that includes the String "loading..." (see also `const LOADING:&str`) but also http or json errors may occur.
-For example if you use an invalid API key you will get `401 Unauthorized`.
+#### Then: Get weather updates
+
+There are three possible kinds of result you get from `update()` which you will have to face:
+
+##### Nothing New: `None`
+
+`update()` returns `None` if there is currently no new update available.
+Which means: **You wont get any update twice!**
+In other words: `update()` is not caching the last weather update for you.
+
+##### Weather Update: `CurrentWeather`
+
+If a new update was downloaded by the polling thread `update()` returns some `CurrentWeather` object.
+`CurrentWeather` is a nested `struct` with the already parsed json properties.
+Those are well described [here](https://openweathermap.org/current#parameter).
+
+##### Some Error: `Err`
+On error `update()` returns some `String` object which includes a brief error description.
+
+Errors may occur...
+- initially while **there is no update yet** you will get an `Err` which includes exactly the String `"loading..."` (predefined in `openweathermap::LOADING`).
+- if a **server error** response was received (e.g. `401 Unauthorized` if an **invalid API key** was used).
+- on **json errors** while parsing the response from *OpenWeatherMap*.
 
 ### Get weather just once
 
-If you need the weather just once you may use the method `weather()` which envelopes `init()` and `update()` into one single call.
-After the first successful weather update you get the result and the spawned thread will stop immediately.
+If you need the weather just once you may use the method `weather()` which envelopes `init()` and `update()` into one single synchronous or asynchronous call.
+After the first successful weather update the spawned thread will stop immediately and you get the result in return.
 
 ```rust
 extern crate openweathermap;
@@ -70,81 +108,7 @@ fn main() {
 
 ```
 
-This example is using the synchronous variant `openweathermap::blocking::weather`.
-If you wanna deal with the returned future by yourself just use `openweathermap::weather`.
+There is a *blocking* and a *non-blocking* variant of `weather()`:
 
-### Reference
-
-#### openweathermap::init()
-
-Spawns a thread which fetches the current weather from [openweathermap.org](https://openweathermap.org) periodically.
-
-##### Definition:
-
-`pub fn init(location: &str, units: &str, lang: &str, api_key: &str, poll_mins: u64) -> Receiver`
-
-##### Parameters:
-
--   `location` : Can be a city name, a city ID or a geographical coordinate. The city name may be followed by comma separated state code and/or country code (e.g. `"Berlin,DE"`). The city ID can be found using [this](https://openweathermap.org/find) website. There you can search for your city which will give you the ID from the link you get. Coordinates are given by comma separated latitude and longitude (e.g. `"52.5244,13.4105"`).
--   `units` : Either `"metric"` (meters, m/s, °C, etc.), `"imperial"` (miles, mi/s, °F, etc.) or `"standard"` (meters, m/s, K, etc.)
--   `lang` : Language code line `"en"` for English (see [this list](https://openweathermap.org/current#multi) for all available language codes).
--   `api_key` : Your API key you can get from [OpenWeatherMap](https://openweathermap.org/price).
--   `poll_mins` : Poll period length in minutes (`10` is recommended). If `poll_mins` equals `0` the thread will terminate after the first successful update.
-
-##### Return Value:
-
-Returns the receiver object which you need to get the latest weather update from `openweathermap::update()`.
-
-#### openweathermap::update()
-
-Get the latest weather update that the spawned thread has fetched.
-
-##### Definition:
-
-`pub fn update(receiver: &Receiver) -> Option<Result<CurrentWeather,String>>`
-
-##### Parameters:
-
-- `receiver` : The receiver object you previously got from `openweathermap::init()`.
-
-##### Return Value:
-
-Returns a `Option<Result<CurrentWeather,String>>` which is `None` if  currently there is no new weather update available.
-
-Otherwise could be `Some<CurrentWeather>` on success or `Err<String>` if an error has occurred. The error could be about a http or json issue. For example you will get `401 Unauthorized` if your API key is invalid or some json parser error message if there is something wrong with the response from OpenWeatherMap.
-
-On success you get a `CurrentWeather` object which is a nested struct including all weather properties which are provided. Those properties are well described [here](https://openweathermap.org/current#parameter).
-All property names are like in this description except `sys.type_` which has a `_` appended so that it does not collide with the rust keyword `type`.
-
-#### openweathermap::weather()
-
-Gets the weather just once and then stops the thread immediately.
-This asynchronously version returns the result in a future.
-
-##### Definition:
-
-`pub fn weather(location: &str, units: &str, lang: &str, api_key: &str) -> Receiver`
-
-##### Parameters:
-
-Like in `init()` except that `poll_mins` is not available.
-
-##### Return Value:
-
-Returns a future of `Option<Result<CurrentWeather,String>>` (see `openweathermap::update()`).
-
-#### openweathermap::blocking::weather()
-
-Gets the weather just once then waits for the response and stops the thread immediately.
-
-##### Definition:
-
-`pub fn weather(location: &str, units: &str, lang: &str, api_key: &str) -> Receiver`
-
-##### Parameters:
-
-Like in `init()` except that `poll_mins` is not available.
-
-##### Return Value:
-
-Like `openweathermap::update()` this function returns `Option<Result<CurrentWeather,String>>`.
+- The above example uses the synchronous (*blocking*) variant `openweathermap::blocking::weather` which wont return until there is a new update.
+- If you like to deal with the returned *future* by yourself just use `openweathermap::weather` and asynchronously await the result until there is any.
