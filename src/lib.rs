@@ -86,8 +86,6 @@ pub struct CurrentWeather {
     pub id: u64,
     pub name: String,
     pub cod: u64,
-    #[serde(skip)]
-    pub units: String,
 }
 
 type Receiver = mpsc::Receiver<Result<CurrentWeather, String>>;
@@ -117,7 +115,6 @@ pub fn init(location: &str, units: &str, lang: &str, api_key: &str, poll_mins: u
     // fork thread that continuously fetches weather updates every <poll_mins> minutes
     let period = Duration::from_secs(60 * poll_mins);
     let (tx, rx) = mpsc::channel();
-    let u = units.to_string();
     thread::spawn(move || {
         tx.send(Err(LOADING.to_string())).unwrap_or(());
         loop {
@@ -125,8 +122,6 @@ pub fn init(location: &str, units: &str, lang: &str, api_key: &str, poll_mins: u
             match response.status() {
                 StatusCode::OK => match serde_json::from_str(&response.text().unwrap()) {
                     Ok(w) => {
-                        let mut w: CurrentWeather = w;
-                        w.units = u.clone();
                         tx.send(Ok(w)).unwrap_or(());
                         if period == Duration::new(0, 0) {
                             break;
