@@ -37,10 +37,10 @@ pub struct Weather {
 /// Detailed weather report
 #[derive(Deserialize, Debug)]
 pub struct Main {
-    // Temperature. Unit Default: Kelvin, Metric: Celsius, Imperial: Fahrenheit.
+    /// Temperature. Unit Default: Kelvin, Metric: Celsius, Imperial: Fahrenheit.
     pub temp: f64,
-    // Temperature. This temperature parameter accounts for the human perception of weather.
-    // Unit Default: Kelvin, Metric: Celsius, Imperial: Fahrenheit.
+    /// Temperature. This temperature parameter accounts for the human perception of weather.
+    /// Unit Default: Kelvin, Metric: Celsius, Imperial: Fahrenheit.
     pub feels_like: f64,
     /// Atmospheric pressure (on the sea level, if there is no sea_level or grnd_level data), hPa
     pub pressure: f64,
