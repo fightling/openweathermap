@@ -6,7 +6,6 @@ edition = "2018"
 description = "easy access current weather data from OpenWeatherMap"
 license = "MIT OR Apache-2.0"
 readme = "README.md"
-documentation = "https://github.com/fightling/openweathermap"
 homepage = "https://github.com/fightling/openweathermap"
 keywords = ["weather", "openweathermap" ]
 
