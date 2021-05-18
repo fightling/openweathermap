@@ -24,7 +24,7 @@ First add this crate to your dependencies in you `Cargo.toml` file:
 
 ```toml
 [dependencies]
-openweathermap = "0.1.3"
+openweathermap = "0.1.4"
 ```
 ### Get continuous weather updates
 
