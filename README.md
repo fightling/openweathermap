@@ -111,3 +111,7 @@ There is a *blocking* and a *non-blocking* variant of `weather()`:
 
 - The above example uses the synchronous (*blocking*) variant `openweathermap::blocking::weather` which wont return until there is a new update.
 - If you like to deal with the returned *future* by yourself just use `openweathermap::weather` and asynchronously await the result until there is any.
+
+## Reference
+
+Reference documentation can be found [here](https://docs.rs/openweathermap).
