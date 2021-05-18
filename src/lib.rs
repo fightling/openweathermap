@@ -284,6 +284,7 @@ pub async fn weather(
     }
 }
 
+/// synchronous functions
 pub mod blocking {
     use super::*;
     /// Fetches a weather update once and stops the thread immediately after success then returns the update.

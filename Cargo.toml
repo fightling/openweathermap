@@ -1,11 +1,12 @@
 [package]
 name = "openweathermap"
-version = "0.1.5"
+version = "0.1.6"
 authors = ["Patrick Hoffmann <pat@thats-software.com>"]
 edition = "2018"
 description = "easy access current weather data from OpenWeatherMap"
 license = "MIT OR Apache-2.0"
 readme = "README.md"
+documentation = "https://docs.rs/openweathermap"
 homepage = "https://github.com/fightling/openweathermap"
 keywords = ["weather", "openweathermap" ]
 
