@@ -4,18 +4,17 @@ This is a crate which lets you easily access current weather data from [OpenWeat
 
 ## Content
 
-<!-- MDTOC maxdepth:6 firsth1:1 numbering:0 flatten:0 bullets:1 updateOnSave:1 -->
+<!-- MDTOC maxdepth:6 firsth1:2 numbering:0 flatten:0 bullets:1 updateOnSave:1 -->
 
-- [openweathermap](#openweathermap)   
-   - [Content](#content)   
-   - [How to use](#how-to-use)   
-      - [Get continuous weather updates](#get-continuous-weather-updates)   
-         - [First: Start polling](#first-start-polling)   
-         - [Then: Get weather updates](#then-get-weather-updates)   
-            - [Nothing New: `None`](#nothing-new-none)   
-            - [Weather Update: `CurrentWeather`](#weather-update-currentweather)   
-            - [Some Error: `Err`](#some-error-err)   
-      - [Get weather just once](#get-weather-just-once)   
+- [Content](#content)   
+- [How to use](#how-to-use)   
+   - [Get continuous weather updates](#get-continuous-weather-updates)   
+      - [First: Start polling](#first-start-polling)   
+      - [Then: Get weather updates](#then-get-weather-updates)   
+         - [Nothing New: `None`](#nothing-new-none)   
+         - [Weather Update: `CurrentWeather`](#weather-update-currentweather)   
+         - [Some Error: `Err`](#some-error-err)   
+   - [Get weather just once](#get-weather-just-once)   
 
 <!-- /MDTOC -->
 
