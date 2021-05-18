@@ -118,19 +118,21 @@ pub fn init(location: &str, units: &str, lang: &str, api_key: &str, poll_mins: u
     thread::spawn(move || {
         tx.send(Err(LOADING.to_string())).unwrap_or(());
         loop {
-            let response = reqwest::blocking::get(&url).unwrap();
-            match response.status() {
-                StatusCode::OK => match serde_json::from_str(&response.text().unwrap()) {
-                    Ok(w) => {
-                        tx.send(Ok(w)).unwrap_or(());
-                        if period == Duration::new(0, 0) {
-                            break;
+            match reqwest::blocking::get(&url) {
+                Ok(response) => match response.status() {
+                    StatusCode::OK => match serde_json::from_str(&response.text().unwrap()) {
+                        Ok(w) => {
+                            tx.send(Ok(w)).unwrap_or(());
+                            if period == Duration::new(0, 0) {
+                                break;
+                            }
+                            thread::sleep(period);
                         }
-                        thread::sleep(period);
-                    }
-                    Err(e) => tx.send(Err(e.to_string())).unwrap_or(()),
+                        Err(e) => tx.send(Err(e.to_string())).unwrap_or(()),
+                    },
+                    _ => tx.send(Err(response.status().to_string())).unwrap_or(()),
                 },
-                _ => tx.send(Err(response.status().to_string())).unwrap_or(()),
+                Err(_e) => (),
             }
         }
     });
