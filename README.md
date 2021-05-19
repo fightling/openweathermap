@@ -1,6 +1,6 @@
 # openweathermap [![Rust](https://github.com/fightling/openweathermap/actions/workflows/rust.yml/badge.svg)](https://github.com/fightling/openweathermap/actions/workflows/rust.yml)
 
-...is a *rust crate* which lets you easily access current weather data from [OpenWeatherMap](https://openweathermap.org/). This is an *unofficial* extension I made to learn rust a little but I hope you have fun with it.
+...is a *rust crate* which lets you easily access current weather data from [OpenWeatherMap](https://openweathermap.org/). This is an *unofficial* extension I made to learn *rust* a little but I hope you have fun with it.
 
 ## Contents
 
