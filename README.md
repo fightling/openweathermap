@@ -1,6 +1,6 @@
 # openweathermap [![Rust](https://github.com/fightling/openweathermap/actions/workflows/rust.yml/badge.svg)](https://github.com/fightling/openweathermap/actions/workflows/rust.yml)
 
-This crate lets you easily access current weather data from [OpenWeatherMap](https://openweathermap.org/). This is an *unofficial* extension I made to learn rust a little.
+...is a *rust crate* which lets you easily access current weather data from [OpenWeatherMap](https://openweathermap.org/). This is an *unofficial* extension I made to learn rust a little but I hope you have fun with it.
 
 ## Contents
 
@@ -16,8 +16,11 @@ This crate lets you easily access current weather data from [OpenWeatherMap](htt
          - [Some Error: `Err`](#some-error-err)   
    - [Get weather just once](#get-weather-just-once)   
 - [Reference Documentation](#reference-documentation)   
-- [*github* repository](#github-repository)   
-- [*crates.io*](#cratesio)   
+- [Links](#links)   
+   - [Website](#website)   
+   - [*github* repository](#github-repository)   
+   - [on *crates.io*](#on-cratesio)   
+- [License](#license)   
 
 <!-- /MDTOC -->
 ## How to use
@@ -118,10 +121,20 @@ There is a *blocking* and a *non-blocking* variant of `weather()`:
 
 Beside this introduction there is a reference documentation which can be found [here](https://docs.rs/openweathermap).
 
-## *github* repository
+## Links
+
+### Website
+
+This README tastes better at [openweathermap.thats-software.com](https://openweathermap.thats-software.com).
+
+### *github* repository
 
 For the source code see [this repository](https://github.com/fightling/openweathermap) at *github.com*.
 
-## *crates.io*
+### on *crates.io*
 
-Published at [crates.io](https://crates.io/crates/openweathermap).
+Published at [*crates.io*](https://crates.io/crates/openweathermap).
+
+## License
+
+openweathermap is licensed under the *MIT license* (LICENSE-MIT or http://opensource.org/licenses/MIT)
