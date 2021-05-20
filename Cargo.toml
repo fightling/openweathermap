@@ -1,13 +1,13 @@
 [package]
 name = "openweathermap"
-version = "0.1.6"
+version = "0.1.7"
 authors = ["Patrick Hoffmann <pat@thats-software.com>"]
 edition = "2018"
 description = "easy access current weather data from OpenWeatherMap"
 license = "MIT OR Apache-2.0"
 readme = "README.md"
 documentation = "https://docs.rs/openweathermap"
-homepage = "https://github.com/fightling/openweathermap"
+homepage = "https://openweathermap.thats-software.com"
 keywords = ["weather", "openweathermap" ]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
