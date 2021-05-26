@@ -23,13 +23,14 @@
 - [License](#license)   
 
 <!-- /MDTOC -->
+
 ## How to use
 
 First add this crate to your dependencies in you `Cargo.toml` file:
 
 ```toml
 [dependencies]
-openweathermap = "0.1.7"
+openweathermap = "0.2.1"
 ```
 ### Get continuous weather updates
 
