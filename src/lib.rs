@@ -102,9 +102,9 @@ pub struct Sys {
     /// Country code (GB, JP etc.)
     pub country: String,
     /// Sunrise time, unix, UTC
-    pub sunrise: u64,
+    pub sunrise: i64,
     /// Sunset time, unix, UTC
-    pub sunset: u64,
+    pub sunset: i64,
 }
 
 #[derive(Deserialize, Debug)]
