@@ -14,9 +14,9 @@ keywords = ["weather", "openweathermap" ]
 
 [dependencies]
 reqwest = { version = "0.11.3", default-features = false, features = ["blocking"] }
-serde = { version = "1.0", default-features = false, features = ["derive"] }
-serde_json = { version = "1.0", default-features = false }
-http = { version = "0.2.4", default-features = false }
-regex = { version = "1.4.6", default-features = false, features = ["std"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = { version = "1.0" }
+http = { version = "0.2.4" }
+regex = { version = "1.4.6" }
 rand = { version = "0.8.3" }
-futures = { version = "0.3.1", default-features = false, features = ["executor"] }
+futures = { version = "0.3.1", features = ["executor"] }

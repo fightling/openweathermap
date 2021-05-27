@@ -51,16 +51,16 @@ pub fn init(location: &str, units: &str, lang: &str, api_key: &str, poll_mins: u
     // generate correct request URL depending on city is id or name
     let url = match location.parse::<u64>().is_ok() {
         true => format!(
-            "https://api.openweathermap.org/data/2.5/weather?id={}&units={}&lang={}&appid={}",
+            "http://api.openweathermap.org/data/2.5/weather?id={}&units={}&lang={}&appid={}",
             location, units, lang, api_key
         ),
         false => {
             let re = Regex::new(r"(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)").unwrap();
             match re.captures(&location) {
-                Some(caps) => format!("https://api.openweathermap.org/data/2.5/weather?lat={}&lon={}&units={}&lang={}&appid={}",
+                Some(caps) => format!("http://api.openweathermap.org/data/2.5/weather?lat={}&lon={}&units={}&lang={}&appid={}",
                             caps.get(1).unwrap().as_str(), caps.get(2).unwrap().as_str(), units, lang, api_key ),
                 None => format!(
-                            "https://api.openweathermap.org/data/2.5/weather?q={}&units={}&lang={}&appid={}",
+                            "http://api.openweathermap.org/data/2.5/weather?q={}&units={}&lang={}&appid={}",
                             location, units, lang, api_key ),
             }
         }
