@@ -129,7 +129,7 @@ pub struct OneCallCurrent {
 
 #[derive(Deserialize, Debug)]
 /// current weather report in a nested struct
-pub struct OneCallCurrentWeather {
+pub struct OneCall {
     /// geo location, latitude
     pub lat: f64,
     /// geo location, longitude
@@ -139,7 +139,7 @@ pub struct OneCallCurrentWeather {
     /// Shift in seconds from UTC
     pub timezone_offset: i64,
     /// Current Weather
-    pub current: OneCallCurrent
+    pub current: Option<OneCallCurrent>
 }
 
 #[derive(Deserialize, Debug)]

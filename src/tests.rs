@@ -11,7 +11,7 @@ fn apikey() -> String {
         }
     }
 }
-/*
+
 #[test]
 fn test_city() {
     let w = blocking::weather("Munich,DE", "metric", "en", &apikey()).unwrap();
@@ -23,15 +23,22 @@ fn test_cityid() {
     let w = blocking::weather("2950159", "metric", "en", &apikey()).unwrap();
     assert_eq!(w.name, "Berlin");
 }
-*/
+
 #[test]
 fn test_coordinate() {
     let w = blocking::weather("52.5244,13.4105", "metric", "en", &apikey()).unwrap();
+    assert_eq!(w.coord.lat, 52.5244);
+    assert_eq!(w.coord.lon, 13.4105);
+}
+
+#[test]
+fn test_onecall_coordinate() {
+    let w = blocking::onecall(52.5244, 13.4105, "metric", "en", &apikey()).unwrap();
     assert_eq!(w.lat, 52.5244);
     assert_eq!(w.lon, 13.4105);
 }
 
-/*
+
 #[test]
 fn test_language() {
     let w = blocking::weather("München,DE", "metric", "de", &apikey()).unwrap();
@@ -54,7 +61,7 @@ fn test_apikey() {
     assert!(w.is_err());
 }
 
-
+/*
 #[test]
 fn test_cities() {
     let mut rng = thread_rng();
