@@ -97,6 +97,53 @@ pub struct Sys {
 
 #[derive(Deserialize, Debug)]
 /// current weather report in a nested struct
+pub struct OneCallCurrent {
+    /// Sunrise time, unix, UTC
+    pub sunrise: i64,
+    /// Sunset time, unix, UTC
+    pub sunset: i64,
+    /// Temperature. Unit Default: Kelvin, Metric: Celsius, Imperial: Fahrenheit.
+    pub temp: f64,
+    /// Temperature. This temperature parameter accounts for the human perception of weather.
+    /// Unit Default: Kelvin, Metric: Celsius, Imperial: Fahrenheit.
+    pub feels_like: f64,
+    /// Atmospheric pressure (on the sea level, if there is no sea_level or grnd_level data), hPa
+    pub pressure: f64,
+    /// Humidity, %
+    pub humidity: f64,
+    /// Dew Point (see Temperature)
+    pub dew_point: f64,
+    /// UVI
+    pub uvi: f64,
+    /// Cloudiness, %
+    pub clouds: f64,
+    /// Visibility, meter
+    pub visibility: u64,
+    /// Wind speed. Unit Default: meter/sec, Metric: meter/sec, Imperial: miles/hour.
+    pub wind_speed: f64,
+    /// Wind direction, degrees (meteorological)
+    pub wind_deg: f64,    
+    /// vector with one item of weather condition descriptions
+    pub weather: Vec<Weather>
+}
+
+#[derive(Deserialize, Debug)]
+/// current weather report in a nested struct
+pub struct OneCallCurrentWeather {
+    /// geo location, latitude
+    pub lat: f64,
+    /// geo location, longitude
+    pub lon: f64,
+    /// Shift in seconds from UTC
+    pub timezone: String,
+    /// Shift in seconds from UTC
+    pub timezone_offset: i64,
+    /// Current Weather
+    pub current: OneCallCurrent
+}
+
+#[derive(Deserialize, Debug)]
+/// current weather report in a nested struct
 pub struct CurrentWeather {
     /// report origin coordinates
     pub coord: Coord,

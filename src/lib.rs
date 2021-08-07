@@ -15,7 +15,7 @@ pub use api::*;
 mod tests;
 
 /// Receiver object you get from `init()` and have top handle to `update()`.
-pub type Receiver = mpsc::Receiver<Result<CurrentWeather, String>>;
+pub type Receiver = mpsc::Receiver<Result<OneCallCurrentWeather, String>>;
 /// Loading error messaage you get at the first call of `update()`.
 pub const LOADING: &str = "loading...";
 
@@ -57,7 +57,7 @@ pub fn init(location: &str, units: &str, lang: &str, api_key: &str, poll_mins: u
         false => {
             let re = Regex::new(r"(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)").unwrap();
             match re.captures(&location) {
-                Some(caps) => format!("http://api.openweathermap.org/data/2.5/weather?lat={}&lon={}&units={}&lang={}&appid={}",
+                Some(caps) => format!("http://api.openweathermap.org/data/2.5/onecall?lat={}&lon={}&units={}&lang={}&exclude=hourly,daily,alerts,minutely&appid={}",
                             caps.get(1).unwrap().as_str(), caps.get(2).unwrap().as_str(), units, lang, api_key ),
                 None => format!(
                             "http://api.openweathermap.org/data/2.5/weather?q={}&units={}&lang={}&appid={}",
@@ -104,7 +104,7 @@ pub fn init(location: &str, units: &str, lang: &str, api_key: &str, poll_mins: u
 ///     - ⇒ `Err(String)`: Error message about any occured http or json issue
 ///         - e.g. `401 Unauthorized`: if your API key is invalid
 ///         - some json parser error message if response from OpenWeatherMap could not be parsed
-pub fn update(receiver: &Receiver) -> Option<Result<CurrentWeather, String>> {
+pub fn update(receiver: &Receiver) -> Option<Result<OneCallCurrentWeather, String>> {
     match receiver.try_recv() {
         Ok(response) => Some(response),
         Err(_e) => None,
@@ -139,7 +139,7 @@ pub async fn weather(
     units: &str,
     lang: &str,
     api_key: &str,
-) -> Result<CurrentWeather, String> {
+) -> Result<OneCallCurrentWeather, String> {
     let r = init(location, units, lang, api_key, 0);
     loop {
         match update(&r) {
@@ -186,7 +186,7 @@ pub mod blocking {
         units: &str,
         lang: &str,
         api_key: &str,
-    ) -> Result<CurrentWeather, String> {
+    ) -> Result<OneCallCurrentWeather, String> {
         // wait for result
         executor::block_on(super::weather(location, units, lang, api_key))
     }
