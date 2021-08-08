@@ -20,3 +20,4 @@ http = { version = "0.2.4" }
 regex = { version = "1.4.6" }
 rand = { version = "0.8.3" }
 futures = { version = "0.3.1", features = ["executor"] }
+chrono = "0.4"

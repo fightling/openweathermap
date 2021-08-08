@@ -15,7 +15,11 @@ pub use api::*;
 mod tests;
 
 /// Receiver object you get from `init()` and have top handle to `update()`.
-pub type Receiver = mpsc::Receiver<Result<CurrentWeather, String>>;
+pub type ReceiverWeather = mpsc::Receiver<Result<CurrentWeather, String>>;
+/// Receiver object you get from `init()` and have top handle to `update()`.
+pub type ReceiverOneCall = mpsc::Receiver<Result<OneCall, String>>;
+/// Receiver object you get from `init()` and have top handle to `update()`.
+pub type ReceiverTimemachine = mpsc::Receiver<Result<TimeMachine, String>>;
 /// Loading error messaage you get at the first call of `update()`.
 pub const LOADING: &str = "loading...";
 
@@ -47,7 +51,69 @@ pub const LOADING: &str = "loading...";
 ///     pub type Receiver = std::sync::mpsc::Receiver<Result<openweathermap::CurrentWeather, String>>;
 ///    ```
 
-pub fn init(location: &str, units: &str, lang: &str, api_key: &str, poll_mins: u64) -> Receiver {
+pub fn inittimemachine(latitude: &f64, longitude: &f64, unix_timestamp: &i64, units: &str, lang: &str, api_key: &str, poll_mins: u64) -> ReceiverTimemachine {
+    let url = format!("http://api.openweathermap.org/data/2.5/onecall/timemachine?lat={}&lon={}&dt={}&units={}&lang={}&appid={}",
+        latitude, longitude, unix_timestamp, units, lang, api_key );
+    // fork thread that continuously fetches weather updates every <poll_mins> minutes
+    let period = Duration::from_secs(60 * poll_mins);
+    let (tx, rx) = mpsc::channel();
+    thread::spawn(move || {
+        tx.send(Err(LOADING.to_string())).unwrap_or(());
+        loop {
+            match reqwest::blocking::get(&url) {
+                Ok(response) => match response.status() {
+                    StatusCode::OK => match serde_json::from_str(&response.text().unwrap()) {
+                        Ok(w) => {
+                            tx.send(Ok(w)).unwrap_or(());
+                            if period == Duration::new(0, 0) {
+                                break;
+                            }
+                            thread::sleep(period);
+                        }
+                        Err(e) => tx.send(Err(e.to_string())).unwrap_or(()),
+                    },
+                    _ => tx.send(Err(response.status().to_string())).unwrap_or(()),
+                },
+                Err(_e) => (),
+            }
+        }
+    });
+    // return receiver that provides the updated weather as json string
+    return rx;
+}
+
+pub fn initonecall(latitude: &f64, longitude: &f64, units: &str, lang: &str, api_key: &str, poll_mins: u64) -> ReceiverOneCall {
+    let url = format!("http://api.openweathermap.org/data/2.5/onecall?lat={}&lon={}&units={}&lang={}&appid={}",
+        latitude, longitude, units, lang, api_key );
+    // fork thread that continuously fetches weather updates every <poll_mins> minutes
+    let period = Duration::from_secs(60 * poll_mins);
+    let (tx, rx) = mpsc::channel();
+    thread::spawn(move || {
+        tx.send(Err(LOADING.to_string())).unwrap_or(());
+        loop {
+            match reqwest::blocking::get(&url) {
+                Ok(response) => match response.status() {
+                    StatusCode::OK => match serde_json::from_str(&response.text().unwrap()) {
+                        Ok(w) => {
+                            tx.send(Ok(w)).unwrap_or(());
+                            if period == Duration::new(0, 0) {
+                                break;
+                            }
+                            thread::sleep(period);
+                        }
+                        Err(e) => tx.send(Err(e.to_string())).unwrap_or(()),
+                    },
+                    _ => tx.send(Err(response.status().to_string())).unwrap_or(()),
+                },
+                Err(_e) => (),
+            }
+        }
+    });
+    // return receiver that provides the updated weather as json string
+    return rx;
+}
+
+pub fn initweather(location: &str, units: &str, lang: &str, api_key: &str, poll_mins: u64) -> ReceiverWeather {
     // generate correct request URL depending on city is id or name
     let url = match location.parse::<u64>().is_ok() {
         true => format!(
@@ -104,7 +170,21 @@ pub fn init(location: &str, units: &str, lang: &str, api_key: &str, poll_mins: u
 ///     - ⇒ `Err(String)`: Error message about any occured http or json issue
 ///         - e.g. `401 Unauthorized`: if your API key is invalid
 ///         - some json parser error message if response from OpenWeatherMap could not be parsed
-pub fn update(receiver: &Receiver) -> Option<Result<CurrentWeather, String>> {
+pub fn updateonecall(receiver: &ReceiverOneCall) -> Option<Result<OneCall, String>> {
+    match receiver.try_recv() {
+        Ok(response) => Some(response),
+        Err(_e) => None,
+    }
+}
+
+pub fn updatetimemachine(receiver: &ReceiverTimemachine) -> Option<Result<TimeMachine, String>> {
+    match receiver.try_recv() {
+        Ok(response) => Some(response),
+        Err(_e) => None,
+    }
+}
+
+pub fn updateweather(receiver: &ReceiverWeather) -> Option<Result<CurrentWeather, String>> {
     match receiver.try_recv() {
         Ok(response) => Some(response),
         Err(_e) => None,
@@ -140,9 +220,56 @@ pub async fn weather(
     lang: &str,
     api_key: &str,
 ) -> Result<CurrentWeather, String> {
-    let r = init(location, units, lang, api_key, 0);
+    let r = initweather(location, units, lang, api_key, 0);
     loop {
-        match update(&r) {
+        match updateweather(&r) {
+            Some(response) => match response {
+                Ok(current) => return Ok(current),
+                Err(e) => {
+                    if e != LOADING {
+                        return Err(e);
+                    }
+                }
+            },
+            None => (),
+        }
+    }
+}
+
+pub async fn timemachine(
+    latitude: &f64,
+    longitude: &f64,
+    unix_timestamp: &i64,
+    units: &str,
+    lang: &str,
+    api_key: &str,
+) -> Result<TimeMachine, String> {
+    let r = inittimemachine(latitude, longitude, unix_timestamp, units, lang, api_key, 0);
+    loop {
+        match updatetimemachine(&r) {
+            Some(response) => match response {
+                Ok(current) => return Ok(current),
+                Err(e) => {
+                    if e != LOADING {
+                        return Err(e);
+                    }
+                }
+            },
+            None => (),
+        }
+    }
+}
+
+pub async fn onecall(
+    latitude: &f64,
+    longitude: &f64,
+    units: &str,
+    lang: &str,
+    api_key: &str,
+) -> Result<OneCall, String> {
+    let r = initonecall(latitude, longitude, units, lang, api_key, 0);
+    loop {
+        match updateonecall(&r) {
             Some(response) => match response {
                 Ok(current) => return Ok(current),
                 Err(e) => {
@@ -190,4 +317,27 @@ pub mod blocking {
         // wait for result
         executor::block_on(super::weather(location, units, lang, api_key))
     }
+
+    pub fn onecall(
+        latitude: &f64,
+        longitude: &f64,
+        units: &str,
+        lang: &str,
+        api_key: &str,
+    ) -> Result<OneCall, String> {
+        // wait for result
+        executor::block_on(super::onecall(latitude, longitude, units, lang, api_key))
+    }
+
+    pub fn timemachine(
+        latitude: &f64,
+        longitude: &f64,
+        unix_timestamp: &i64,
+        units: &str,
+        lang: &str,
+        api_key: &str,
+    ) -> Result<TimeMachine, String> {
+        // wait for result
+        executor::block_on(super::timemachine(latitude, longitude, unix_timestamp, units, lang, api_key))
+    }    
 }
