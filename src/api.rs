@@ -114,7 +114,7 @@ pub struct Hour {
     /// Cloudiness, %
     pub clouds: i64,
     /// Current UV index
-    pub uvi: f64,
+    pub uvi: Option<f64>,
     /// Visibility, meter
     pub visibility: i64,
     /// Wind speed. Unit Default: meter/sec, Metric: meter/sec, Imperial: miles/hour.
@@ -126,7 +126,7 @@ pub struct Hour {
     /// vector with one item of weather condition descriptions
     pub weather: Vec<Weather>,
     // Probability of precipitation    
-    pub pop: f64, 
+    pub pop: Option<f64>, 
     // Rain volume for last hour, mm
     pub rain: Option<Volume>,
     // Snow volume for last hour, mm
@@ -272,6 +272,23 @@ pub struct Current {
     pub rain: Option<Volume>,
     //Snow volume for last hour, mm
     pub snow: Option<Volume>,
+}
+
+#[derive(Deserialize, Debug)]
+/// current weather report in a nested struct
+pub struct TimeMachine {
+    /// geo location, latitude
+    pub lat: f64,
+    /// geo location, longitude
+    pub lon: f64,
+    /// Shift in seconds from UTC
+    pub timezone: String,
+    /// Shift in seconds from UTC
+    pub timezone_offset: i64,
+    /// Current Weather
+    pub current: Current,
+    /// Hourly Weather
+    pub hourly: Vec<Hour>,
 }
 
 #[derive(Deserialize, Debug)]

@@ -1,6 +1,7 @@
 // Note this useful idiom: importing names from outer (for mod tests) scope.
 use super::*;
 use rand::{thread_rng, Rng};
+use chrono::{Utc, Duration, TimeZone};
 
 fn apikey() -> String {
     match std::env::var("OWM_APIKEY") {
@@ -32,8 +33,20 @@ fn test_coordinate() {
 }
 
 #[test]
+fn test_timemachine_time() {
+    let now = Utc::now();
+    let yesterday = now.checked_sub_signed(Duration::days(1)).unwrap();
+    let yesterday_unix = yesterday.timestamp();
+    let w = blocking::timemachine(&41.383333, &2.183333, &yesterday_unix, "metric", "en", &apikey()).unwrap();
+    let hourly = w.hourly.first().unwrap();
+
+    assert_eq!(Utc.timestamp(w.current.dt, 0).date(), yesterday.date());
+    assert_eq!(Utc.timestamp(hourly.dt, 0).date(), yesterday.date());
+}
+
+#[test]
 fn test_onecall_lengths() {
-    let w = blocking::onecall(41.383333, 2.183333, "metric", "en", &apikey()).unwrap();
+    let w = blocking::onecall(&41.383333, &2.183333, "metric", "en", &apikey()).unwrap();
     assert!(w.hourly.unwrap().len() > 0);
     assert!(w.minutely.unwrap().len() > 0);
     assert!(w.daily.unwrap().len() > 0);
@@ -41,9 +54,11 @@ fn test_onecall_lengths() {
 
 #[test]
 fn test_onecall_coordinate() {
-    let w = blocking::onecall(52.5244, 13.4105, "metric", "en", &apikey()).unwrap();
-    assert_eq!(w.lat, 52.5244);
-    assert_eq!(w.lon, 13.4105);
+    let lat = 52.5244;
+    let lon = 13.4105;
+    let w = blocking::onecall(&lat, &lon, "metric", "en", &apikey()).unwrap();
+    assert_eq!(w.lat, lat);
+    assert_eq!(w.lon, lon);
 }
 
 
@@ -69,7 +84,6 @@ fn test_apikey() {
     assert!(w.is_err());
 }
 
-/*
 #[test]
 fn test_cities() {
     let mut rng = thread_rng();
@@ -2289,4 +2303,3 @@ const CITIES: &[u64] = &[
     8015209, 8015353, 8020218, 8030162, 8050879, 8050888, 8063096, 8125829, 8198709, 8199378,
     8199394, 8224624, 8224782, 8224783, 8224933, 8224935, 8260318, 10722858, 71296900,
 ];
-*/
