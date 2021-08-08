@@ -50,7 +50,7 @@ pub const LOADING: &str = "loading...";
 ///    ```
 
 pub fn initonecall(latitude: &f64, longitude: &f64, units: &str, lang: &str, api_key: &str, poll_mins: u64) -> ReceiverOneCall {
-    let url = format!("http://api.openweathermap.org/data/2.5/onecall?lat={}&lon={}&units={}&lang={}&exclude=hourly,daily,alerts,minutely&appid={}",
+    let url = format!("http://api.openweathermap.org/data/2.5/onecall?lat={}&lon={}&units={}&lang={}&appid={}",
         latitude, longitude, units, lang, api_key );
     // fork thread that continuously fetches weather updates every <poll_mins> minutes
     let period = Duration::from_secs(60 * poll_mins);

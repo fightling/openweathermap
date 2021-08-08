@@ -32,6 +32,14 @@ fn test_coordinate() {
 }
 
 #[test]
+fn test_onecall_lengths() {
+    let w = blocking::onecall(41.383333, 2.183333, "metric", "en", &apikey()).unwrap();
+    assert!(w.hourly.unwrap().len() > 0);
+    assert!(w.minutely.unwrap().len() > 0);
+    assert!(w.daily.unwrap().len() > 0);
+}
+
+#[test]
 fn test_onecall_coordinate() {
     let w = blocking::onecall(52.5244, 13.4105, "metric", "en", &apikey()).unwrap();
     assert_eq!(w.lat, 52.5244);
