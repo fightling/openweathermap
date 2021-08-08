@@ -255,8 +255,8 @@ pub mod blocking {
     }
 
     pub fn onecall(
-        latitude: f64,
-        longitude: f64,
+        latitude: &f64,
+        longitude: &f64,
         units: &str,
         lang: &str,
         api_key: &str,

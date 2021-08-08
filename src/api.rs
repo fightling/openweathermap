@@ -231,7 +231,7 @@ pub struct Alert {
     /// Description of the alert.
     pub description: String,        
     /// Type of severe weather
-    pub tags: String
+    pub tags: Vec<String>
 }
 
 #[derive(Deserialize, Debug)]
